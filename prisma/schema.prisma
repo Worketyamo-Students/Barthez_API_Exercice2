@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model employee {
+  employe_id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  email String @unique
+  password String
+  post String
+  salary String
+}
+
+model attendance {
+  attendance_id String @id @default(auto()) @map("_id") @db.ObjectId
+  employeeID String @db.ObjectId
+  date DateTime @default(now())
+  startTime DateTime
+  endTime DateTime
+}
+
+model absence {
+  absence_id String @id @default(auto()) @map("_id") @db.ObjectId
+  employeeID String @db.ObjectId
+  date DateTime @default(now())
+  absenceHours Int @default(1)
+}
+
+model notification {
+  notification_id String @id @default(auto()) @map("_id") @db.ObjectId
+  employeeID String @db.ObjectId
+  message String
+}
