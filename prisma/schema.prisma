@@ -20,11 +20,24 @@ model employee {
   password String
   post String
   salary String
+
+  // each user can have one or many notifications
+  notifications notification[]
+
+  //each user can have one or many attendances
+  attendances attendance[]
+  
+  //each user can have one or many abscences
+  abscences absence[]
 }
 
 model attendance {
   attendance_id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // Relationship between the employee and his attendance 
+  employee employee @relation(fields: [employeeID], references: [employe_id])
   employeeID String @db.ObjectId
+  
   date DateTime @default(now())
   startTime DateTime
   endTime DateTime
@@ -32,13 +45,21 @@ model attendance {
 
 model absence {
   absence_id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relationship between the employee and his attendance 
+  employee employee @relation(fields: [employeeID], references: [employe_id])
   employeeID String @db.ObjectId
+
   date DateTime @default(now())
   absenceHours Int @default(1)
 }
 
 model notification {
   notification_id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  //relationship between the notification an user who receives it 
+  employee employee @relation(fields: [employeeID], references: [employe_id])
   employeeID String @db.ObjectId
+
   message String
 }
