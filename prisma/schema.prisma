@@ -15,51 +15,39 @@ datasource db {
 
 model employee {
   employe_id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
-  email String @unique
-  password String
-  post String
-  salary String
-
-  // each user can have one or many notifications
-  notifications notification[]
+  name       String
+  email      String @unique
+  password   String
+  post       String
+  salary     Int
 
   //each user can have one or many attendances
   attendances attendance[]
-  
+
   //each user can have one or many abscences
   abscences absence[]
 }
 
 model attendance {
   attendance_id String @id @default(auto()) @map("_id") @db.ObjectId
-  
+
   // Relationship between the employee and his attendance 
-  employee employee @relation(fields: [employeeID], references: [employe_id])
-  employeeID String @db.ObjectId
-  
+  employee   employee @relation(fields: [employeeID], references: [employe_id])
+  employeeID String   @db.ObjectId
+
   date DateTime @default(now())
-  startTime DateTime
-  endTime DateTime
+
+  startTime Int
+  endTime   Int?
 }
 
 model absence {
   absence_id String @id @default(auto()) @map("_id") @db.ObjectId
 
   // Relationship between the employee and his attendance 
-  employee employee @relation(fields: [employeeID], references: [employe_id])
-  employeeID String @db.ObjectId
+  employee   employee @relation(fields: [employeeID], references: [employe_id])
+  employeeID String   @db.ObjectId
 
-  date DateTime @default(now())
-  absenceHours Int @default(1)
-}
-
-model notification {
-  notification_id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  //relationship between the notification an user who receives it 
-  employee employee @relation(fields: [employeeID], references: [employe_id])
-  employeeID String @db.ObjectId
-
-  message String
+  date         DateTime @default(now())
+  absenceHours Int      @default(0)
 }

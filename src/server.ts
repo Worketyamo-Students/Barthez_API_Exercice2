@@ -8,6 +8,8 @@ import morgan from 'morgan';
 import { ONE_HUNDRED, SIXTY } from './core/constants';
 import helmet from 'helmet'
 import cors from 'cors'
+import employee from './routes/employees-route';
+import attendance from './routes/attendances-routes';
 
 
 const app = express();
@@ -29,6 +31,29 @@ app.use(
 );
 
 // Routes du programme
+app.use(
+	"/employees",
+	rateLimit({
+		max: 20,
+		windowMs: 60000,
+		handler: (req, res) => {
+			res.status(429).json({msg: "Too much request from this address"})
+		}
+	}),
+	employee
+);
+
+app.use(
+	"/attendance",
+	rateLimit({
+		max: 20,
+		windowMs: 60000,
+		handler: (req, res) => {
+			res.status(429).json({msg: "Too much request from this address"})
+		}
+	}),
+	attendance
+);
 
 // Journalisations
 app.use(morgan('combined'));
@@ -36,5 +61,5 @@ app.use(morgan('combined'));
 // Documentation
 setupSwagger(app);
 
-// Export
+// Export application to app file
 export default app;
