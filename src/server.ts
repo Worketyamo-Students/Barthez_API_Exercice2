@@ -10,6 +10,7 @@ import helmet from 'helmet'
 import cors from 'cors'
 import employee from './routes/employees-route';
 import attendance from './routes/attendances-routes';
+import abscence from './routes/abscences-routes';
 
 
 const app = express();
@@ -53,6 +54,17 @@ app.use(
 		}
 	}),
 	attendance
+);
+
+app.use(
+	rateLimit({
+		max: 20,
+		windowMs: 60000,
+		handler: (req, res) => {
+			res.status(429).json({msg: "Too much request from this address"})
+		}
+	}),
+	abscence
 );
 
 // Journalisations

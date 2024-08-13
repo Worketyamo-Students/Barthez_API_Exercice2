@@ -13,7 +13,7 @@ employee.post('/login', employeeControllers.connexion);
 employee.post('/logout/:employe_id', employeeControllers.deconnexion);
 
 // consultation of employee
-employee.get('/profile/:employe_id', employeeControllers.consultEmployee);
+employee.get('/profile/:employe_id?', employeeControllers.consultEmployee);
 
 // update employee
 employee.put('/profile/:employe_id', employeeControllers.updateEmployeeData);

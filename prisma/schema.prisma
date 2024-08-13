@@ -37,8 +37,8 @@ model attendance {
 
   date DateTime @default(now())
 
-  startTime Int
-  endTime   Int?
+  startTime DateTime
+  endTime   DateTime?
 }
 
 model absence {
@@ -49,5 +49,5 @@ model absence {
   employeeID String   @db.ObjectId
 
   date         DateTime @default(now())
-  absenceHours Int      @default(0)
+  absenceHours Int      @default(1)
 }

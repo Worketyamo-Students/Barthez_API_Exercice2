@@ -63,7 +63,7 @@ const employeeControllers = {
 
             // Return success message
             res
-                .status(HttpCode.CREATED)
+                .status(HttpCode.OK)
                 .json({msg: "employee connected !"})
         } catch (error) {
             return errors.serverError(res, error);
@@ -86,7 +86,7 @@ const employeeControllers = {
 
             // Return success message
             res
-                .status(HttpCode.CREATED)
+                .status(HttpCode.OK)
                 .json({msg: "employee deconnected !"})
         } catch (error) {
             return errors.serverError(res, error);
@@ -96,28 +96,42 @@ const employeeControllers = {
     // function to consult employees
     consultEmployee: async (req: Request, res: Response) =>{
         try {
-            // fetch data from body
+            // fetch employee id from params
             const {employe_id} = req.params;
-            if(!employe_id) return res.status(HttpCode.BAD_REQUEST).json({msg: "All fields are mandatory !"})
+            let employee;
             
-            // check if employee exist
-            const employeeExist = await prisma.employee.findUnique({where: {employe_id}});
-            if(!employeeExist) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
-
-            const employee = await prisma.employee.findUnique({
-                where: {employe_id},
-                select: {
-                    name: true,
-                    email: true,
-                    post: true,
-                    salary: true
-                }
-            });
-            if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "error when extracting employees data !"})
-
+            if(employe_id){
+                // check if employee exist
+                const employeeExist = await prisma.employee.findUnique({where: {employe_id}});
+                if(!employeeExist) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
+    
+                employee = await prisma.employee.findUnique({
+                    where: {employe_id},
+                    select: {
+                        name: true,
+                        email: true,
+                        post: true,
+                        salary: true
+                    }
+                });
+                if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "error when extracting employees data !"})
+    
+            }else{
+                employee = await prisma.employee.findMany({
+                    select: {
+                        name: true,
+                        email: true,
+                        post: true,
+                        salary: true
+                    }
+                });
+                if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "error when extracting employees data !"})                
+                if(employee.length===0) res.status(HttpCode.NO_CONTENT).json({msg: "empty employee list!"});
+            }            
+                
             // Return success message
             res
-                .status(HttpCode.CREATED)
+                .status(HttpCode.OK)
                 .json({msg: employee})
         } catch (error) {
             return errors.serverError(res, error);
