@@ -3,6 +3,7 @@ import { HttpCode } from "../core/constants";
 import errors from "../functions/error";
 import { PrismaClient } from "@prisma/client";
 import { comparePassword, hashText } from "../functions/bcrypt";
+import employeeToken from "../functions/jwt";
 
 const prisma = new PrismaClient();
 
@@ -49,17 +50,32 @@ const employeeControllers = {
             if(!email || !password) return res.status(HttpCode.BAD_REQUEST).json({msg: "All fields are mandatory !"})
             
             // check if employee exist
-            const employeeExist = await prisma.employee.findUnique({where: {email}});
-            if(!employeeExist) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
+            const employee = await prisma.employee.findUnique({where: {email}});
+            if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
 
             // Check if it's correct password
-            const isPassword = await comparePassword(password, employeeExist.password);
+            const isPassword = await comparePassword(password, employee.password);
             if(!isPassword) return res.status(HttpCode.BAD_REQUEST).json({msg: "incorrect password !"});
 
             // Save access token and refresh token
-            employeeExist.password = "";
+            employee.password = "";
+            
+            const accessToken = employeeToken.accessToken(employee)
+            const refreshToken = employeeToken.refreshToken(employee);
 
+            console.log(accessToken, refreshToken);
 
+            res.setHeader('authorization', `Barear ${accessToken}`);
+            res.cookie(
+                `${employee.email}_key`,
+                accessToken,
+                {
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 1000 * 60 * 60 * 24 * 3
+                }
+            );
+            console.log(accessToken, refreshToken);
 
             // Return success message
             res
@@ -78,10 +94,18 @@ const employeeControllers = {
             if(!employe_id) return res.status(HttpCode.BAD_REQUEST).json({msg: "All fields are mandatory !"})
             
             // check if employee exist
-            const employeeExist = await prisma.employee.findUnique({where: {employe_id}});
-            if(!employeeExist) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
+            const employee = await prisma.employee.findUnique({where: {employe_id}});
+            if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "employee not exist"})
             
             // invalid access and refresh token
+            res.setHeader('authorization', `Bearer `);
+            res.clearCookie(
+                `${employee.email}_key`,
+                {
+                    secure: true,
+                    httpOnly: true,
+                }
+            )
             
 
             // Return success message

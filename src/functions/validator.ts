@@ -3,26 +3,38 @@ import { body } from "express-validator";
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{5,}$/;
 
 const validator = {
-    validateUser: [
-        // Validation of user name
+    validateEmployee: [
+        // Validation of employee name
         body('name')
-            .exists().withMessage('Le nom est requis !')
-            .trim().notEmpty().withMessage('le nom ne doit pas etre vide !')
-            .isString().withMessage('le nom doit etre une chaine de caractere !')
-            .isLength({min:3}).withMessage('le nom est trop court !')
-            .isLength({max: 25}).withMessage('le nom est trop long !')
+            .exists().withMessage('name is required !')
+            .trim().notEmpty().withMessage('name cannot be empty !')
+            .isString().withMessage('name should have a string !')
+            .isLength({min:3}).withMessage('name is to short !')
+            .isLength({max: 25}).withMessage('name is too long !')
         ,
-        // Validatoion of user email
+        // Validatoion of employee email
         body('email')
-            .exists().withMessage('L\'email est requis !')
-            .trim().notEmpty().withMessage('l\'email ne doit pas etre vide !')
-            .isEmail().withMessage('Addresse email vailde !')
+            .exists().withMessage('email is required !')
+            .trim().notEmpty().withMessage('email can\'t be empty !')
+            .isEmail().withMessage('invalid email !')
         ,
-        // validation of user password
+        // validation of employee password
         body('password')
-            .exists().withMessage('Le mot de passe est requis !')
-            .trim().notEmpty().withMessage('mot de passe ne peut etre vide!')
-            .matches(passwordRegex).withMessage('mot de passe trop faible !')
+            .exists().withMessage('required password !')
+            .trim().notEmpty().withMessage('password can\'t be empty!')
+            .matches(passwordRegex).withMessage('password too week !')
+        ,
+        body('post')
+            .exists().withMessage('post is required !')
+            .trim().notEmpty().withMessage('post cannot be empty !')
+            .isString().withMessage('post should have a string !')
+            .isLength({min:2}).withMessage('post is too short !')
+            .isLength({max: 25}).withMessage('post is too long !')
+        ,
+        body('salary')
+            .exists().withMessage('salary is required !')
+            .trim().notEmpty().withMessage('salary cannot be empty !')
+            .isInt({min: 500, max: 100000000}).withMessage('invalid salary !')
         ,
     ],
 
@@ -37,11 +49,11 @@ const validator = {
         ,
         //validation of author
         body('author')
-            .exists().withMessage('Le nom de l\'autheur est requis !')
-            .trim().notEmpty().withMessage('Le nom de l\'autheur ne doit pas etre vide !')
-            .isString().withMessage('le nom de l\'autheur doit etre une chaine de caractere !')
-            .isLength({min: 3}).withMessage('nom de l\'autheur trop court !')
-            .isLength({max: 30}).withMessage('nom de l\'autheur trop long !')
+            .exists().withMessage('Le name de l\'autheur est requis !')
+            .trim().notEmpty().withMessage('Le name de l\'autheur ne doit pas etre vide !')
+            .isString().withMessage('le name de l\'autheur doit etre une chaine de caractere !')
+            .isLength({min: 3}).withMessage('name de l\'autheur trop court !')
+            .isLength({max: 30}).withMessage('name de l\'autheur trop long !')
         ,
         //Validation of description
         body('description')
@@ -80,7 +92,7 @@ const validator = {
 
     validateLoand: [
         // validation de l'id de l'utilisateur entrer
-        body('userID')
+        body('employeeID')
             .exists().withMessage('L\'ID de l\'utilisateur est requis !')
             .trim().notEmpty().withMessage('L\'ID de l\'utilisateur ne peut etre vide')
             .isMongoId().withMessage('Format de l\'ID invalide !')
