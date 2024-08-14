@@ -11,12 +11,12 @@ interface ItemplateData {
     content: string
 }
 const emailConfig = {
-    email: process.env.EMAIL,
-    password: process.env.PASSWORD
+    email: process.env.EMAIL as string,
+    password: process.env.PASSWORD as string
 }
 const validateEmailConfig = () => {
     if(!emailConfig.email || !emailConfig.password){
-        console.error("Addresse email ou mot de passe non configuré !");
+        console.error("email address or password not config!");
         process.exit(1);
     }
 };
@@ -25,6 +25,7 @@ validateEmailConfig();
 // Configuration du transporteur de l'email
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
+    // port: parseInt(process.env.PORT as string || "400"),
     port: 465,
     secure: true,
     auth: {
@@ -36,7 +37,7 @@ const transporter = nodemailer.createTransport({
 async function sendMail(receiver: string, templateData: ItemplateData) {
     try {
         // Lecture du contenu du template ejs
-        const templatePath = path.join(__dirname + '/mail.ejs')
+        const templatePath = path.join(__dirname + '/sendmail.ejs')
         const template = fs.readFileSync(templatePath, 'utf8')
 
         // Creer un rendu HTML avec les données lu dans le fichier ejs.
@@ -46,15 +47,15 @@ async function sendMail(receiver: string, templateData: ItemplateData) {
         const mailOptions = {
             from: emailConfig.email,
             to: receiver,
-            subject: "Bibliotheque Communal",
+            subject: "Employee of Dark Agence",
             html: content
         }
 
         // Envoi du message
         await transporter.sendMail(mailOptions)
-        console.log("Message envoyé avec succes");
+        console.log("message successfuly send");
     } catch (error) {
-        console.error(`Une erreur est survenue lors de l'envoi de l'addresse email: ${error}`)
+        console.error(`eeror when trying to send mail: ${error}`)
         throw error;
     }
 }

@@ -4,6 +4,7 @@ import errors from "../functions/error";
 import { PrismaClient } from "@prisma/client";
 import { comparePassword, hashText } from "../functions/bcrypt";
 import employeeToken from "../functions/jwt";
+import sendMail from "../functions/sendmail";
 
 const prisma = new PrismaClient();
 
@@ -28,10 +29,18 @@ const employeeControllers = {
                     email,
                     password: hashPassword,
                     post,
-                    salary
+                    salary: parseInt(salary)
                 }
             });
             if(!newEmployee) return res.status(HttpCode.NOT_FOUND).json({msg: "Error when creating new employee !"});
+
+            sendMail(
+                newEmployee.email, 
+                {
+                    name: newEmployee.name, 
+                    content: "Merci de vous etre enregistré !"
+                }
+            )
 
             // Return success message
             res
@@ -63,20 +72,17 @@ const employeeControllers = {
             const accessToken = employeeToken.accessToken(employee)
             const refreshToken = employeeToken.refreshToken(employee);
 
-            console.log(accessToken, refreshToken);
-
-            res.setHeader('authorization', `Barear ${accessToken}`);
+            res.setHeader('authorization', `Bearer ${accessToken}`);
             res.cookie(
                 `${employee.email}_key`,
-                accessToken,
+                refreshToken,
                 {
                     httpOnly: true,
                     secure: true,
-                    maxAge: 1000 * 60 * 60 * 24 * 3
+                    maxAge: 1000 * 60 * 60 * 24 * 30
                 }
             );
-            console.log(accessToken, refreshToken);
-
+            
             // Return success message
             res
                 .status(HttpCode.OK)
@@ -107,7 +113,6 @@ const employeeControllers = {
                 }
             )
             
-
             // Return success message
             res
                 .status(HttpCode.OK)
@@ -181,7 +186,7 @@ const employeeControllers = {
 
             const updateEmployee = await prisma.employee.update({
                 where: {employe_id},
-                data: { name, email, password: hashPassword, post, salary },
+                data: { name, email, password: hashPassword, post, salary: parseInt(salary) },
                 select: { name: true, email: true, post: true, salary:true },
             });
             if(!updateEmployee) return res.status(HttpCode.NOT_FOUND).json({msg: "error when update employee !"});
@@ -189,7 +194,7 @@ const employeeControllers = {
             // Return success message
             res
                 .status(HttpCode.CREATED)
-                .json({msg: updateEmployee})
+                .json({msg: `${employeeExist.name} has been modified successfuly. It's become:`, updateEmployee})
         } catch (error) {
             return errors.serverError(res, error);
         }
