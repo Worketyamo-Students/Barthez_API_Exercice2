@@ -142,7 +142,7 @@ const attendanceControllers = {
                 select: {
                     date: true,
                     startTime: true,
-                    endTime: true
+                    endTime: true,
                 }
             });
             if(!attendances || attendances.length === 0) return res.status(HttpCode.NOT_FOUND).json({msg: "Not attendance found for this employee !"})

@@ -17,8 +17,8 @@ const employeeControllers = {
             if(!name || !email || !password || !post || !salary) return res.status(HttpCode.BAD_REQUEST).json({msg: "All fields are mandatory !"})
 
             // Check if user ever exist
-            const employeeExist = await prisma.employee.findUnique({where: {email}})
-            if(employeeExist) return res.status(HttpCode.BAD_REQUEST).json({msg: "Email is ever used !"});
+            const employeeAlreadyExist = await prisma.employee.findUnique({where: {email}})
+            if(employeeAlreadyExist) return res.status(HttpCode.BAD_REQUEST).json({msg: "Email is ever used !"});
             
             const hashPassword = await hashText(password);
             if(!hashPassword) return res.status(HttpCode.BAD_REQUEST).json({msg: ""})
@@ -112,7 +112,15 @@ const employeeControllers = {
                     httpOnly: true,
                 }
             )
-            
+
+            sendMail(
+                employee.email, 
+                {
+                    name: employee.name, 
+                    content: "Vous venez de vous deconnectez de l'agence:Dark Agence; Merci de reconnecter bientot !"
+                }
+            )
+
             // Return success message
             res
                 .status(HttpCode.OK)
@@ -221,7 +229,43 @@ const employeeControllers = {
         } catch (error) {
             return errors.serverError(res, error);
         }
-    }    
+    },
+
+    // Function to refresh token
+    refreshAccessToken: async(req: Request, res: Response) => {
+        // fetch data from body
+        const {employe_id} = req.params;
+        if(!employe_id) return res.status(HttpCode.BAD_REQUEST).json({msg: "required employee ID in params !"});
+        
+        // check if employee exist
+        const employee = await prisma.employee.findUnique({where: {employe_id}});
+        if(!employee) return res.status(HttpCode.NOT_FOUND).json({msg: "specified employee not found"});
+        
+        // Fetch refresh token of employee from cookie
+        const refreshToken = req.cookies[`${employee.email}_key`]; 
+        if(!refreshToken) return res.status(HttpCode.UNAUTHORIZED).json({msg: 'failed to fetch refreshtoken !'});
+        
+        // Decode refresh token
+        const employeeData = employeeToken.verifyRefreshToken(refreshToken);
+        if(!employeeData) return res.status(HttpCode.UNAUTHORIZED).json({msg: "invalid refresh token!" });
+        employeeData.password = "";
+
+        // Creating a new access an a nex refresh token
+        const newAccessToken = employeeToken.accessToken(employeeData) 
+        const newRefreshToken = employeeToken.refreshToken(employeeData)
+
+        res.setHeader('authorization', `Bearer ${newAccessToken}`);
+        res.cookie(
+            `${employee.email}_key`,
+            newRefreshToken,
+            {
+                httpOnly: true,
+                secure: true,
+                maxAge: 1000 * 60 * 60 * 24 * 30
+            }
+        );
+
+    }
 }
 
 export default employeeControllers;

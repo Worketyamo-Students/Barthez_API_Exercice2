@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { body, param, query, validationResult } from "express-validator";
+import { HttpCode } from "../core/constants";
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{5,}$/;
 
@@ -82,12 +83,12 @@ export const validator = {
         ,
     ],
 }
-
+    
 export const validate = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
+      return res.status(HttpCode.UNPROCESSABLE_ENTITY).json({ errors: errors.array() })
     }
     next();
-  }
+}
   

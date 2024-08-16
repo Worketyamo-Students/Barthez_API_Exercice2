@@ -11,6 +11,7 @@ import cors from 'cors'
 import employee from './routes/employees-route';
 import attendance from './routes/attendances-routes';
 import abscence from './routes/abscences-routes';
+import cookieParser from 'cookie-parser';
 
 
 const app = express();
@@ -30,6 +31,7 @@ app.use(
 		message: 'Trop de Requete à partir de cette adresse IP '
 	})
 );
+app.use(cookieParser());
 
 // Routes du programme
 app.use(
