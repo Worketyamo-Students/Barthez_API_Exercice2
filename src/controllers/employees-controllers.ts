@@ -117,7 +117,7 @@ const employeeControllers = {
                 employee.email, 
                 {
                     name: employee.name, 
-                    content: "Vous venez de vous deconnectez de l'agence:Dark Agence; Merci de reconnecter bientot !"
+                    content: "Vous venez de vous deconnectez de l'agence:Dark Agence; <br> Merci de vous reconnecter bientot !"
                 }
             )
 

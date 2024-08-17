@@ -24,8 +24,6 @@ employee.post(
 // Deconnexion of employee
 employee.post(
     '/logout/:employe_id', 
-    validator.validateEmployeeID, 
-    validate, 
     auth.authToken,
     employeeControllers.deconnexion
 );
@@ -49,8 +47,6 @@ employee.put(
 // Delete employee
 employee.delete(
     '/profile/:employe_id', 
-    validator.validateEmployeeID, 
-    validate, 
     auth.authToken,
     employeeControllers.deleteEmployee
 );

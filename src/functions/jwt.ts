@@ -13,23 +13,27 @@ interface Ipayload {
     salary: number;
 }
 
+// Download all The keys at the beginin of our program
+const privateKey = readFileSync(process.env.JWT_PRIVATE_KEY as string, "utf-8");
+const publicKey = readFileSync(process.env.JWT_PUBLIC_KEY as string, "utf-8");
+const privateKeyRefresh = readFileSync(process.env.JWT_REFRESH_PRIVATE_KEY as string, "utf-8") as string;
+const publicKeyRefresh = readFileSync(process.env.JWT_REFRESH_PUBLIC_KEY as string, "utf-8");
+
 const employeeToken = {
     accessToken: (payload: Ipayload) => {
         const signOption = {
             algorithm: process.env.JWT_ALGORITHM as jwt.Algorithm,
             expiresIn: process.env.JWT_ACCESS_EXPIRES_IN as string
         } 
-
-        const privateKey = readFileSync(process.env.JWT_PRIVATE_KEY as string, "utf-8");
         return jwt.sign(payload, privateKey, signOption) as string;
     },
 
     verifyAccessToken: (token: string) => {
         try {
-            const publicKey = readFileSync(process.env.JWT_PUBLIC_KEY as string, "utf-8");
             return jwt.verify(token, publicKey) as Ipayload;
         } catch (error) {
             console.error(`Invalide access token: ${error}`)
+            throw error;
         }
     },
 
@@ -40,17 +44,15 @@ const employeeToken = {
             expiresIn: process.env.JWT_REFRESH_EXPIRES_IN as string
         };
 
-        const privateKey = readFileSync(process.env.JWT_REFRESH_PRIVATE_KEY as string, "utf-8") as string;
-        return jwt.sign(payload, privateKey, signOption);
+        return jwt.sign(payload, privateKeyRefresh, signOption);
     },
 
     verifyRefreshToken: (refreshToken: string) => {
         try {
-            const publicKey = readFileSync(process.env.JWT_REFRESH_PUBLIC_KEY as string, "utf-8");
-            
-            return jwt.verify(refreshToken, publicKey) as Ipayload;
+            return jwt.verify(refreshToken, publicKeyRefresh) as Ipayload;
         } catch (error) {
             console.error(`token invalide: ${error}`);
+            throw error;
         }
     },
 };

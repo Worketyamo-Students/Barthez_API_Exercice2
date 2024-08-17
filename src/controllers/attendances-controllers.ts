@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { HOURS_OF_WORKS, HttpCode } from "../core/constants";
 import errors from "../functions/error";
 import { PrismaClient } from "@prisma/client";
+import sendMail from "../functions/sendmail";
 
 const prisma = new PrismaClient();
 
@@ -55,8 +56,8 @@ const attendanceControllers = {
             if(!employeeID) return res.status(HttpCode.BAD_REQUEST).json({msg: "you should enter the employeID !"})
 
             // Check if user employee exist
-            const employeeExist = await prisma.employee.findUnique({where: {employe_id: employeeID}})
-            if(!employeeExist) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
+            const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+            if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
 
             // Initialise date
             const date = new Date()
@@ -95,21 +96,48 @@ const attendanceControllers = {
             let endTime = updateAttendance.endTime.getHours();
             if(updateAttendance.endTime.getMinutes()>45){
                 endTime += 1;
-            }
+            }    
             abscenceHours = HOURS_OF_WORKS - (endTime - startTime);
             
+            // Send Notification to user about his attendance, returned and abcences hours
+            let message: string = "";
+            if(abscenceHours > 0){
+                message = `
+                    you came to work today at ${updateAttendance.startTime.getHours()}:${updateAttendance.startTime.getMinutes()} A.M, 
+                    and you returned at ${updateAttendance.endTime.getHours()}h${updateAttendance.endTime.getMinutes()}min, 
+                    that's ${abscenceHours} hours of absence, 
+                    this will have repercussions on your salary! 
+                `;
+            }else if(abscenceHours < 0){
+                message = `
+                    you came to work today at ${updateAttendance.startTime.getHours()}:${updateAttendance.startTime.getMinutes()} A.M, 
+                    and you returned at ${updateAttendance.endTime.getHours()}h${updateAttendance.endTime.getMinutes()}min, 
+                    you were not late, 
+                    thank you for your hard work                            
+                `;
+            }else{
+                message = `
+                    you came to work today at ${updateAttendance.startTime.getHours()}:${updateAttendance.startTime.getMinutes()} A.M, 
+                    and you returned at ${updateAttendance.endTime.getHours()}h${updateAttendance.endTime.getMinutes()}min,
+                    you have not had any significant absences, 
+                    thank you for your punctuality                
+                `;                            
+            }
+            sendMail(employee.email, {name:employee.name , content: message})
+
+            // Delete case where abscence is negatif
             if(abscenceHours < 0){
                 abscenceHours = 0;
-            }
+            }    
             
-            // Create abscence
+            // save abscence in DB
             const createAbscence = await prisma.absence.create({
                 data: {
                     employeeID,
                     date: dateOfToday,
                     absenceHours: abscenceHours,
-                }
-            });
+                }    
+            });    
             if(!createAbscence) return res.status(HttpCode.NOT_FOUND).json({msg: "error when creating abscence"});
 
             // Return success message
