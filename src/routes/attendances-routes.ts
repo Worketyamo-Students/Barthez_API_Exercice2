@@ -1,7 +1,7 @@
 import { Router } from "express";
 import attendanceControllers from "../controllers/attendances-controllers";
 import { validate, validator } from "../functions/validator";
-import auth from "../middlewares/auth-middleware";
+import { auth } from "../middlewares/auth-middleware";
 
 const attendance = Router();
 

@@ -11,11 +11,11 @@ interface IEmployee {
     salary: number;
 }
 
-interface customRequest extends Request{
+export interface customRequest extends Request{
     employee?: IEmployee;
 }
 
-const auth = {
+export const auth = {
     authToken: async(req: customRequest, res: Response, next: NextFunction) => {
         try {
             const accessToken = req.header('authorization')?.split(" ")[1] || "";
@@ -35,5 +35,3 @@ const auth = {
         }
     } 
 }
-
-export default auth;

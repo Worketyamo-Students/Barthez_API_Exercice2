@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { HttpCode } from "../core/constants";
 import errors from "../functions/error";
-import { PrismaClient } from "@prisma/client";
 import sendMail from "../functions/sendmail";
+import prisma from "../core/config/prisma";
 
-const prisma = new PrismaClient();
 
 const abscencesControllers = {
     abscencesHours: async (req: Request, res: Response) =>{

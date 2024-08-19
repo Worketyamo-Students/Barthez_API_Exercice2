@@ -3,6 +3,9 @@
 export const SIXTY = 60 as const;
 export const ONE_HUNDRED = 100 as const;
 export const ONE_THOUSAND = 1000 as const;
+
+export const BEGIN_HOURS = 8 as const
+export const END_HOURS = 16 as const
 export const HOURS_OF_WORKS = 8 as const;
 
 export enum HttpCode {

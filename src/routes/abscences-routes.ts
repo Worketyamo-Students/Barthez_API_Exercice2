@@ -1,7 +1,6 @@
 import { Router } from "express";
 import abscencesControllers from "../controllers/abscences-controllers";
-import auth from "../middlewares/auth-middleware";
-
+import { auth } from "../middlewares/auth-middleware";
 
 
 const abscence = Router();

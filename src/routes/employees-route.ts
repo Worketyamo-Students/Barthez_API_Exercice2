@@ -1,7 +1,7 @@
 import { Router } from "express";
 import employeeControllers from "../controllers/employees-controllers";
 import { validator, validate } from '../functions/validator';
-import auth from "../middlewares/auth-middleware";
+import { auth } from "../middlewares/auth-middleware";
 
 const employee = Router();
 
@@ -23,21 +23,21 @@ employee.post(
 
 // Deconnexion of employee
 employee.post(
-    '/logout/:employe_id', 
+    '/logout', 
     auth.authToken,
     employeeControllers.deconnexion
 );
 
 // consultation of employee
 employee.get(
-    '/profile/:employe_id?', 
+    '/profile', 
     auth.authToken,
     employeeControllers.consultEmployee
 );
 
 // update employee
 employee.put(
-    '/profile/:employe_id', 
+    '/profile', 
     validator.validateEmployee, 
     validate, 
     auth.authToken,
@@ -46,13 +46,13 @@ employee.put(
 
 // Delete employee
 employee.delete(
-    '/profile/:employe_id', 
+    '/profile', 
     auth.authToken,
     employeeControllers.deleteEmployee
 );
 
 employee.post(
-    '/refresh/:employe_id',
+    '/refresh',
     employeeControllers.refreshAccessToken
 );
 

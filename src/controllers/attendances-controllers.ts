@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
 import { HOURS_OF_WORKS, HttpCode } from "../core/constants";
 import errors from "../functions/error";
-import { PrismaClient } from "@prisma/client";
 import sendMail from "../functions/sendmail";
-
-const prisma = new PrismaClient();
+import prisma from "../core/config/prisma";
 
 const attendanceControllers = {
     // Saving Comming Hours
