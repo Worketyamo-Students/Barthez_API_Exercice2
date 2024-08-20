@@ -52,7 +52,7 @@ employee.delete(
 );
 
 employee.post(
-    '/refresh',
+    '/refresh/:employeeID',
     employeeControllers.refreshAccessToken
 );
 

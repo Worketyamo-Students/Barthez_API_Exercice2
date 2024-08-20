@@ -2,17 +2,15 @@ import nodemailer from 'nodemailer'
 import fs from 'fs';
 import ejs from 'ejs';
 import path from 'path'
-import dotenv from 'dotenv'
-
-dotenv.config();
+import { envs } from '../core/config/env';
 
 interface ItemplateData {
     name: string,
     content: string
 }
 const emailConfig = {
-    email: process.env.EMAIL as string,
-    password: process.env.PASSWORD as string
+    email: envs.MAIL_ADDRESS,
+    password: envs.MAIL_PASSWORD
 }
 const validateEmailConfig = () => {
     if(!emailConfig.email || !emailConfig.password){
@@ -24,30 +22,30 @@ validateEmailConfig();
 
 // Configuration du transporteur de l'email
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    // port: parseInt(process.env.PORT as string || "400"),
-    port: 465,
-    secure: true,
+    host: envs.MAIL_HOST,
+    port: envs.MAIL_PORT,
+    secure: envs.MAIL_SECURITY,
     auth: {
         user: emailConfig.email,
         pass: emailConfig.password,
     },
 });
 
-async function sendMail(receiver: string, templateData: ItemplateData) {
+
+async function sendMail(receiver: string, subjet: string, templateData: ItemplateData) {
     try {
         // Lecture du contenu du template ejs
         const templatePath = path.join(__dirname + '/sendmail.ejs')
-        const template = fs.readFileSync(templatePath, 'utf8')
+        const template = fs.readFileSync(templatePath, 'utf8');
 
         // Creer un rendu HTML avec les données lu dans le fichier ejs.
         const content = ejs.render(template, templateData)
 
         //options du message a envoyer
         const mailOptions = {
-            from: emailConfig.email,
+            from: `Barthez_Web Developper : ${emailConfig.email}`,
             to: receiver,
-            subject: "Employee of Dark Agence",
+            subject: subjet,
             html: content
         }
 
@@ -55,7 +53,7 @@ async function sendMail(receiver: string, templateData: ItemplateData) {
         await transporter.sendMail(mailOptions)
         console.log("message successfuly send");
     } catch (error) {
-        console.error(`eeror when trying to send mail: ${error}`)
+        console.error(`Error when trying to send mail: ${error}`)
         throw error;
     }
 }

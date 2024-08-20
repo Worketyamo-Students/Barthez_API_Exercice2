@@ -35,6 +35,7 @@ const employeeControllers = {
 
             sendMail(
                 newEmployee.email, 
+                'Welcome to the Dark Agence',
                 {
                     name: newEmployee.name, 
                     content: "Merci de vous etre Inscrit !"
@@ -94,10 +95,15 @@ const employeeControllers = {
     // function for deconnexion of employee
     deconnexion: async (req: customRequest, res: Response) =>{
         try {
-            
-            const employee = req.employee;
-            if(!employee) return res.status(HttpCode.UNAUTHORIZED).json({msg: "Authentification failed !"})
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
 
+            // Check if user employee exist
+            const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+            if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
+
+ 
             // invalid access and refresh token
             res.setHeader('authorization', `Bearer `);
             res.clearCookie(
@@ -110,6 +116,7 @@ const employeeControllers = {
 
             sendMail(
                 employee.email, 
+                'The Dark Agence',
                 {
                     name: employee.name, 
                     content: "Vous venez de vous deconnectez de l'agence:Dark Agence; <br> Merci de vous reconnecter bientot !"
@@ -119,7 +126,7 @@ const employeeControllers = {
             // Return success message
             res
                 .status(HttpCode.OK)
-                .json({msg: "employee deconnected !"})
+                .json({msg: "employee disconnected !"})
         } catch (error) {
             return errors.serverError(res, error);
         }
@@ -128,8 +135,13 @@ const employeeControllers = {
     // function to consult employees
     consultEmployee: async (req: customRequest, res: Response) =>{
         try {
-            const employee = req.employee;
-            if(!employee) return res.status(HttpCode.UNAUTHORIZED).json({msg: "Authentification failed !"})
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
+
+            // Check if user employee exist
+            const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+            if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
 
             const infoEmployee = {
                 name: employee.name,
@@ -150,8 +162,13 @@ const employeeControllers = {
     // function to update employee
     updateEmployeeData: async (req: customRequest, res: Response) =>{
         try {
-           const employee = req.employee;
-           if(!employee) return res.status(HttpCode.UNAUTHORIZED).json({msg: "Failed to authenticate employee !"});
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
+
+            // Check if user employee exist
+            const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+            if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
 
            // fetch data from body
             const {name, email, password, post, salary} = req.body;            
@@ -160,7 +177,7 @@ const employeeControllers = {
             if(!hashPassword) return res.status(HttpCode.BAD_REQUEST).json({msg: ""})
 
             const updateEmployee = await prisma.employee.update({
-                where: {employe_id: employee.employe_id},
+                where: {employe_id: employeeID},
                 data: { name, email, password: hashPassword, post, salary: parseInt(salary) },
                 select: { name: true, email: true, post: true, salary:true },
             });
@@ -178,12 +195,18 @@ const employeeControllers = {
     // function to delete employee
     deleteEmployee: async (req: customRequest, res: Response) =>{
         try {
-            const employee = req.employee;
-            if(!employee) return res.status(HttpCode.UNAUTHORIZED).json({msg: "Failed to authenticate employee !"});
-             
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
+
+            // Check if user employee exist
+            const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+            if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
+
+ 
             const deleteEmployee = await prisma.employee.delete(
                 {where: 
-                    {employe_id: employee.employe_id}
+                    {employe_id: employeeID}
                 }
             );
             if(!deleteEmployee) return res.status(HttpCode.NOT_FOUND).json({msg: "error when delete employee !"})
@@ -199,9 +222,15 @@ const employeeControllers = {
     },
 
     // Function to refresh token
-    refreshAccessToken: async(req: customRequest, res: Response) => {
-        const employee = req.employee;
-        if(!employee) return res.status(HttpCode.UNAUTHORIZED).json({msg: "Failed to authenticate employee !"});
+    refreshAccessToken: async(req: Request, res: Response) => {
+        // fetch employeID from authentification
+        const {employeeID} = req.params;            
+        if(!employeeID) return res.status(HttpCode.BAD_REQUEST).json({msg: "Employee ID not found !"})
+
+        // Check if user employee exist
+        const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
+        if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
+
 
         // Fetch refresh token of employee from cookie
         const refreshToken = req.cookies[`${employee.email}_key`]; 

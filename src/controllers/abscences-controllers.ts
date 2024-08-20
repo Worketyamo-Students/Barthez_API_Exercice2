@@ -3,22 +3,23 @@ import { HttpCode } from "../core/constants";
 import errors from "../functions/error";
 import sendMail from "../functions/sendmail";
 import prisma from "../core/config/prisma";
+import { customRequest } from "../middlewares/auth-middleware";
 
 
 const abscencesControllers = {
-    abscencesHours: async (req: Request, res: Response) =>{
+    abscencesHours: async (req: customRequest, res: Response) =>{
         try {
-            // fetch employeID from params
-            const {employeeID} = req.params;        
-            if(!employeeID) return res.status(HttpCode.BAD_REQUEST).json({msg: "you should enter the employeID !"})
-
-            const {start, end} = req.query;
-            if(!start || !end) return res.json({msg: "You should specified de begin and the end date to get total abscence hours !"})
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
 
             // Check if user employee exist
             const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
             if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
-            
+
+            const {start, end} = req.query;
+            if(!start || !end) return res.json({msg: "You should specified de begin and the end date to get total abscence hours !"})
+
             // Defines the date with the value that user enter
             const today = new Date();
             const startDate = new Date(start as string);
@@ -56,18 +57,18 @@ const abscencesControllers = {
         }
     },
 
-    abscencesAdjustments: async (req: Request, res: Response) =>{
+    abscencesAdjustments: async (req: customRequest, res: Response) =>{
         try {
-            // fetch employeID from params
-            const {employeeID} = req.params;        
-            if(!employeeID) return res.status(HttpCode.BAD_REQUEST).json({msg: "you should enter the employeID !"})
-
-            const {start, end} = req.query;
-            if(!start || !end) return res.json({msg: "You should specified de begin and the end date to get total abscence hours !"})
+            // fetch employeID from authentification
+            const employeeID = req.employee?.employe_id;            
+            if(!employeeID) return res.status(HttpCode.UNAUTHORIZED).json({msg: "authentification error !"})
 
             // Check if user employee exist
             const employee = await prisma.employee.findUnique({where: {employe_id: employeeID}})
             if(!employee) return res.status(HttpCode.BAD_REQUEST).json({msg: "employee not found !"});
+
+            const {start, end} = req.query;
+            if(!start || !end) return res.json({msg: "You should specified de begin and the end date to get total abscence hours !"})
             
             // Defines the date with the value that user enter
             const today = new Date();
@@ -115,7 +116,11 @@ const abscencesControllers = {
                 you will have a reduction of <b>${reduction}</b>, 
                 your new salary amounts to: <b>${newSalary}</b>.
             `;
-            sendMail(employee.email, {name:employee.name , content: message})
+            sendMail(
+                employee.email, 
+                'The Dark Agence, Monthly Rapport',
+                {name:employee.name , content: message}
+            )
 
             // Return success message
             res
