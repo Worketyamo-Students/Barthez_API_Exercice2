@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { customRequest } from "../middlewares/auth-middleware";
 import { HOURS_OF_WORKS, HttpCode, MAX_BEGIN_HOURS, MAX_END_HOURS } from "../core/constants";
 import errors from "../functions/error";
 import sendMail from "../functions/sendmail";
 import prisma from "../core/config/prisma";
-import { customRequest } from "../middlewares/auth-middleware";
 
 const attendanceControllers = {
     //* Saving Comming Hours
@@ -48,7 +48,7 @@ const attendanceControllers = {
             // Get abscence hours and create abscence hours if necessary
             const abscencesHours = commingHours - MAX_BEGIN_HOURS;
             if(abscencesHours > 0){
-                const createAbscence = await prisma.absence.create({
+                await prisma.absence.create({
                     data: {
                         employeeID: employeeID,
                         date: dateOfToday,
@@ -126,7 +126,7 @@ const attendanceControllers = {
             const hours_worked = endingHours - beginHours;
 
             // Get abscence hours
-            let newAbscencesHours = Math.max(HOURS_OF_WORKS - hours_worked, 0);
+            const newAbscencesHours = Math.max(HOURS_OF_WORKS - hours_worked, 0);
             let totalAbscenceHours = newAbscencesHours;
 
             // fetch abscences hours of morning

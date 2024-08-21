@@ -6,13 +6,13 @@ import { auth } from "../middlewares/auth-middleware";
 const abscence = Router();
 
 abscence.get(
-    '/attendance/absences/:employeeID', 
+    '/attendance/absences', 
     auth.authToken,
     abscencesControllers.abscencesHours
 );
 
 abscence.get(
-    '/salary/:employeeID', 
+    '/salary', 
     auth.authToken,
     abscencesControllers.abscencesAdjustments
 );
